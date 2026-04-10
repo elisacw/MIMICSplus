@@ -177,22 +177,22 @@ contains
   end function ROI_function 
   
   function calc_EcMfrac(PFT_dist) result(EcM_frac) !Used when ROI=False in namelist options
-    !In:
-    real(r8),dimension(15)               :: PFT_dist
-    
-    !Out:
-    real(r8)                             :: EcM_frac
-    
-    !Local:
-    integer                              :: i
-    real(r8),dimension(15),parameter     :: EcM_fraction=(/1.,1.,1.,1.,0.,0.,0.,0.5,1.,1.,1.,1.,1.,0.,0./) !from CLM param file
+   !In:
+   real(r8),dimension(15)               :: PFT_dist
+   
+   !Out:
+   real(r8)                             :: EcM_frac
+   
+   !Local:
+   integer                              :: i
+   real(r8),dimension(15),parameter     :: EcM_fraction=(/1.,1.,1.,1.,0.,0.,0.,0.5,1.,1.,1.,1.,1.,0.,0./) !from CLM param file
 
-    EcM_frac = 0.0
-    do i = 1, 15, 1
-      EcM_frac = EcM_frac + PFT_dist(i)*EcM_fraction(i)
-    end do
-    EcM_frac = EcM_frac/100.
-  end function calc_EcMfrac
+   EcM_frac = 0.0
+   do i = 1, 15, 1
+     EcM_frac = EcM_frac + PFT_dist(i)*EcM_fraction(i)
+   end do
+   EcM_frac = EcM_frac/100.
+ end function calc_EcMfrac
   
   function myc_modifier(C_input, max_input) result(mod) !Modifies N mining/scavegeing fluxes to avoid that mycorriza provides the plant with free N 
     !input

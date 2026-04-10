@@ -183,3 +183,4 @@ tools/Nadd_exp.ipynb
 tools/myfunction.py
 run_test.bash
 run.bash
+*.nc

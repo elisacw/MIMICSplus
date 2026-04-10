@@ -2,8 +2,8 @@
 #-------------------------------------------------------------------------------
 
 PROG = ./run_script_dev
-LIB = /home/ecaas/anaconda3/envs/nc-fortran/lib
-INCS = /home/ecaas/anaconda3/envs/nc-fortran/include
+LIB = /home/elisacw/anaconda3/envs/soilenv/lib
+INCS = /home/elisacw/anaconda3/envs/soilenv/include
 
 BUILD_DIR := ./bld
 SRC_DIRS := ./src

@@ -34,18 +34,22 @@ module writeMod
       integer, intent ( in) :: status
       if(status /= nf90_noerr) then
         print *, trim(nf90_strerror(status))
-        stop 2
+        stop 999
       end if
     end subroutine check
 
-    subroutine create_netcdf(output_path,run_name)
+    subroutine create_netcdf(output_path,run_name, start_year)
       character (len = *),intent(in) :: run_name
       character (len = *),intent(in) :: output_path
+      integer,            intent(in) :: start_year
 
       integer :: ncid, varid
       integer, parameter :: gridcell = 1, column = 1
       integer :: v
+      character(len=10) :: st_year_c
+      print *,(output_path//trim(run_name)//".nc")
       call check(nf90_create(output_path//trim(run_name)//".nc",NF90_NETCDF4,ncid))
+
 
       call check(nf90_def_dim(ncid, "time", nf90_unlimited, t_dimid))
       call check(nf90_def_dim(ncid, "gridcell", gridcell, grid_dimid))
@@ -141,8 +145,11 @@ module writeMod
       
       call check(nf90_def_var(ncid, "mcdate", NF90_INT,(/t_dimid/), varid))
       call check(nf90_put_att(ncid,varid,"unit","yyyymmdd"))
-      call check(nf90_def_var(ncid, "time", NF90_INT, (/t_dimid /), varid))
-      call check(nf90_put_att(ncid,varid,"unit","hours"))
+      call check(nf90_def_var(ncid, "time", NF90_FLOAT, (/t_dimid /), varid))
+      write(st_year_c,"(I4)") start_year
+
+      call check(nf90_put_att(ncid,varid,"units","days since " // st_year_c //"-01-01"))
+      write(*,*) "days since ",st_year_c,"-01-01"
       call check(nf90_def_var(ncid, "month", NF90_INT, (/t_dimid /), varid))
       call check(nf90_def_var(ncid, "f_met", NF90_FLOAT,(/t_dimid /),varid))
       call check(nf90_put_att(ncid,varid,"unit","unitless"))
@@ -206,11 +213,14 @@ module writeMod
       integer                          :: i , j !for looping
       integer                          :: varid, timestep 
       real(r8)                         :: N_SMIN
+      real(r8)                         :: time_float
 
       call get_timestep(time, write_hour, timestep)
 
+      time_float = real(time)
+
       call check(nf90_inq_varid(ncid, "time", varid))
-      call check(nf90_put_var(ncid, varid, time, start = (/ timestep /)))
+      call check(nf90_put_var(ncid, varid, time/24.0_r8, start = (/ timestep /)))
       call check(nf90_inq_varid(ncid, "mcdate", varid))
       call check(nf90_put_var(ncid, varid, mcdate, start = (/ timestep /)))    
       call check(nf90_inq_varid(ncid, "f_met", varid))

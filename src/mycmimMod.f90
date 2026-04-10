@@ -398,7 +398,7 @@ contains
       norm_froot_prof = (froot_prof-minval(froot_prof))/(maxval(froot_prof)-minval(froot_prof))
       
       !Create file and write initial vallues to it:
-      call create_netcdf(trim(out_path),run_name)
+      call create_netcdf(trim(out_path),run_name,start_year)
       call check(nf90_open(trim(out_path)//trim(run_name)//".nc", nf90_write, writencid))  
       call fill_netcdf(writencid,t_init, pool_matrixC, pool_matrixN,inorg_N_matrix, &
       date, HR_mass_accumulated,HR,HRb,HRf,HRe,HRa, change_matrixC,&
@@ -1052,56 +1052,56 @@ contains
 
   subroutine myc_to_plant(CUE_EcM,CUE_AM,enzyme_prod,NAMPlant,NEcMPlant) !Calculate rates of N flow from mycorrhiza to plant
     
-    !INOUT: 
-    real(r8), intent(inout) :: CUE_EcM ![-]
-    real(r8), intent(inout) :: CUE_AM  ![-]
-    real(r8), intent(inout) :: enzyme_prod ![-]
-    
-    !OUTPUT
-    real(r8), intent(out)   :: NAMPlant  ![gN/m3 h]
-    real(r8), intent(out)   :: NEcMPlant ![gN/m3 h]
-    
-    !LOCAL
-    real(r8) ::     AM_N_demand ![gN/m3 h]
-    real(r8) ::     AM_N_uptake ![gN/m3 h]
-    real(r8) ::     EcM_N_demand ![gN/m3 h]
-    real(r8) ::     EcM_N_uptake ![gN/m3 h]
+   !INOUT: 
+   real(r8), intent(inout) :: CUE_EcM ![-]
+   real(r8), intent(inout) :: CUE_AM  ![-]
+   real(r8), intent(inout) :: enzyme_prod ![-]
+   
+   !OUTPUT
+   real(r8), intent(out)   :: NAMPlant  ![gN/m3 h]
+   real(r8), intent(out)   :: NEcMPlant ![gN/m3 h]
+   
+   !LOCAL
+   real(r8) ::     AM_N_demand ![gN/m3 h]
+   real(r8) ::     AM_N_uptake ![gN/m3 h]
+   real(r8) ::     EcM_N_demand ![gN/m3 h]
+   real(r8) ::     EcM_N_uptake ![gN/m3 h]
 
-    !All N the Mycorrhiza dont need for its own, it gives to the plant:
-    AM_N_demand = CUE_AM*C_PlantAM/CN_ratio(6) 
-    AM_N_uptake = N_INAM     
+   !All N the Mycorrhiza dont need for its own, it gives to the plant:
+   AM_N_demand = CUE_AM*C_PlantAM/CN_ratio(6) 
+   AM_N_uptake = N_INAM     
 
-    if ( AM_N_uptake >= AM_N_demand ) then   
-      NAMPlant = AM_N_uptake - AM_N_demand
-    else !Reduce efficiency 
-      NAMPlant = (1-f_growth)*AM_N_uptake
-      CUE_AM = f_growth*AM_N_uptake*CN_ratio(6)/(C_PlantAM)
-    end if
-    if ( abs(NAMPlant) < 1e-16 ) then !TODO: How low/high should this value be?
-      save_N=save_N+NAMPlant
-      NAMPlant=0.0
-    end if
+   if ( AM_N_uptake >= AM_N_demand ) then   
+     NAMPlant = AM_N_uptake - AM_N_demand
+   else !Reduce efficiency 
+     NAMPlant = (1-f_growth)*AM_N_uptake
+     CUE_AM = f_growth*AM_N_uptake*CN_ratio(6)/(C_PlantAM)
+   end if
+   if ( abs(NAMPlant) < 1e-16 ) then !TODO: How low/high should this value be?
+     save_N=save_N+NAMPlant
+     NAMPlant=0.0
+   end if
 
-    !All N the Mycorrhiza dont need for its own, it gives to the plant:
-    EcM_N_demand = (CUE_EcM*(1-enzyme_prod)*C_PlantEcM)/CN_ratio(5)
-    EcM_N_uptake = N_INEcM + N_SOMpEcM + N_SOMcEcM 
-    if ( EcM_N_uptake >= EcM_N_demand ) then   
-        NEcMPlant=EcM_N_uptake-EcM_N_demand      
-    else !reduce efficiency or enzyme production, determined by option in namelist file.
-        NEcMPlant = (1-f_growth)*EcM_N_uptake
-        if ( use_ENZ ) then
-          enzyme_prod = 1 - (f_growth*EcM_N_uptake*CN_ratio(5))/(CUE_EcM*C_PlantEcM)
-        else
-          CUE_EcM = (f_growth*EcM_N_uptake*CN_ratio(5))/((1-enzyme_prod)*C_PlantEcM)
-        end if
-    end if
-    if ( abs(NEcMPlant) < 1e-16 ) then
-      save_N=save_N+NEcMPlant
-      
-      NEcMPlant=0.0
-    end if
+   !All N the Mycorrhiza dont need for its own, it gives to the plant:
+   EcM_N_demand = (CUE_EcM*(1-enzyme_prod)*C_PlantEcM)/CN_ratio(5)
+   EcM_N_uptake = N_INEcM + N_SOMpEcM + N_SOMcEcM 
+   if ( EcM_N_uptake >= EcM_N_demand ) then   
+       NEcMPlant=EcM_N_uptake-EcM_N_demand      
+   else !reduce efficiency or enzyme production, determined by option in namelist file.
+       NEcMPlant = (1-f_growth)*EcM_N_uptake
+       if ( use_ENZ ) then
+         enzyme_prod = 1 - (f_growth*EcM_N_uptake*CN_ratio(5))/(CUE_EcM*C_PlantEcM)
+       else
+         CUE_EcM = (f_growth*EcM_N_uptake*CN_ratio(5))/((1-enzyme_prod)*C_PlantEcM)
+       end if
+   end if
+   if ( abs(NEcMPlant) < 1e-16 ) then
+     save_N=save_N+NEcMPlant
+     
+     NEcMPlant=0.0
+   end if
 
-  end subroutine myc_to_plant 
+ end subroutine myc_to_plant 
 
   subroutine calculate_fluxes(depth,Temp_Celsius,water_content,C_pool_matrix,N_pool_matrix, &
                               N_inorg_matrix,Deposition_rate, Leaching_rate, nitrification, &

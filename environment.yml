@@ -1,13 +1,15 @@
-name: soil_env
+name: mimics_env
 channels:
+  - plotly
+  - anaconda
   - conda-forge
   - defaults
 dependencies:
-  - netcdf-fortran=4.6
+  - python=3.11.0
+  - netcdf-fortran
   - xarray
   - pandas
-  - matplotlib=3.4.2
-  - jupyterlab=3.2
-  - netcdf4=1.5.7
+  - matplotlib
+  - jupyterlab
+  - netcdf4
   - seaborn
-prefix: /home/ecaas/anaconda3/envs/soil_env
