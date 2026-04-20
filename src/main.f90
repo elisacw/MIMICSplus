@@ -27,9 +27,9 @@ program main
   real(r8), dimension (:,:), allocatable   :: N_matrix_1850
   real(r8), dimension (:,:), allocatable   :: N_inorg_matrix_1850
 
-  real(r8), dimension (:,:), allocatable   :: C_matrix_2014    
-  real(r8), dimension (:,:), allocatable   :: N_matrix_2014
-  real(r8), dimension (:,:), allocatable   :: N_inorg_matrix_2014  
+  real(r8), dimension (:,:), allocatable   :: C_matrix_2025    
+  real(r8), dimension (:,:), allocatable   :: N_matrix_2025
+  real(r8), dimension (:,:), allocatable   :: N_inorg_matrix_2025  
     
   real(r8), dimension (:,:), allocatable   :: C_matrix_1987    
   real(r8), dimension (:,:), allocatable   :: N_matrix_1987    
@@ -74,7 +74,7 @@ program main
   read(spinup_only_char,*) spinup_only
   
   !Get number of active soil layers from CLM file:
-  call read_nlayers(trim(adjustr(clm_data_file)//'all.1901.nc'))
+  call read_nlayers(trim(clm_data_file)//'1901.nc')
 
   !Read namelist options:
   call read_namelist(trim(namelist_file),use_ROI, use_Sulman, use_ENZ, dt)
@@ -104,7 +104,7 @@ program main
   if ( .not. spinup_only ) then
     allocate(C_matrix_1970(nlevels,pool_types),N_matrix_1970(nlevels,pool_types_N),N_inorg_matrix_1970(nlevels,inorg_N_pools))
     allocate(C_matrix_1850(nlevels,pool_types),N_matrix_1850(nlevels,pool_types_N),N_inorg_matrix_1850(nlevels,inorg_N_pools))
-    allocate(C_matrix_2014(nlevels,pool_types),N_matrix_2014(nlevels,pool_types_N),N_inorg_matrix_2014(nlevels,inorg_N_pools))
+    allocate(C_matrix_2025(nlevels,pool_types),N_matrix_2025(nlevels,pool_types_N),N_inorg_matrix_2025(nlevels,inorg_N_pools))
     allocate(C_matrix_1987(nlevels,pool_types),N_matrix_1987(nlevels,pool_types_N),N_inorg_matrix_1987(nlevels,inorg_N_pools))
     allocate(C_matrix_final(nlevels,pool_types),N_matrix_final(nlevels,pool_types_N),N_inorg_matrix_final(nlevels,inorg_N_pools))  
 
@@ -166,13 +166,13 @@ program main
                 clm_mortality_path = clm_mortality_file, & 
                 clm_surf_path=clm_surface_file, out_path = output_path)
     
-    !4.1: output every year:
-                call decomp(nsteps=115*24*365, &
-                run_name=trim(trim(site)//"_"//trim(description)//"_"//"to2014"), &
+    !4.1: output every year — extended to 2025:
+                call decomp(nsteps=126*24*365, &
+                run_name=trim(trim(site)//"_"//trim(description)//"_"//"to2025"), &
                 write_hour=1*24*365,&
                 pool_C_start=C_matrix_Spunup,pool_N_start=N_matrix_Spunup,inorg_N_start=N_inorg_matrix_Spunup,&
-                pool_C_final=C_matrix_2014,pool_N_final=N_matrix_2014,inorg_N_final=N_inorg_matrix_2014,&
-                start_year=1900,stop_year=2014,clm_input_path=clm_data_file, &
+                pool_C_final=C_matrix_2025,pool_N_final=N_matrix_2025,inorg_N_final=N_inorg_matrix_2025,&
+                start_year=1900,stop_year=2025,clm_input_path=clm_data_file, &
                 clm_mortality_path = clm_mortality_file, & 
                 clm_surf_path=clm_surface_file, out_path = output_path)
   
@@ -185,6 +185,7 @@ program main
                 start_year=1988,stop_year=1992,clm_input_path=clm_data_file,clm_mortality_path = clm_mortality_file, &
                 clm_surf_path=clm_surface_file, out_path = output_path)
     deallocate (C_matrix_1970,N_matrix_1970,N_inorg_matrix_1970,C_matrix_1987,N_matrix_1987,N_inorg_matrix_1987)
+    deallocate (C_matrix_2025,N_matrix_2025,N_inorg_matrix_2025)
     deallocate (C_matrix_final,N_matrix_final,N_inorg_matrix_final)
   endif
 
