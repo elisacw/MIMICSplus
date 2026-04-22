@@ -36,7 +36,7 @@ do
   clm_mortality_file="${MIMICS_INPUT}/${site}/mortality/mort_${site}_"
 
   # clm_surface_file: single surface data file for this site
-  clm_surface_file="${MIMICS_INPUT}/${site}/surfdata_${site}_simyr2000.nc"
+  clm_surface_file="${MIMICS_INPUT}/${site}/surfdata_${site}_hist_2000_16pfts_c260310.nc"
 
   ./run_script_dev \
     $site \

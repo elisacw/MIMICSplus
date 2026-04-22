@@ -89,7 +89,7 @@ module readMod
       integer            :: ncid, varid
       
       call check(nf90_open(trim(clm_history_file), nf90_nowrite, ncid))
-      call check(nf90_inq_varid(ncid, 'WATSAT', varid))
+      call check(nf90_inq_varid(ncid, 'watsat', varid))
       call check(nf90_get_var(ncid, varid, WATSAT,count=(/1,nlevels/)))
       
       call check(nf90_inq_varid(ncid, 'LEAF_PROF', varid))
@@ -115,7 +115,7 @@ module readMod
       
       call check(nf90_open(trim(clm_history_file), nf90_nowrite, ncid))
       call check(nf90_inq_varid(ncid, 'PCT_NAT_PFT', pftid))
-      call check(nf90_get_var(ncid, pftid, PCT_NAT_PFT, count=(/1,15/)))
+      call check(nf90_get_var(ncid, pftid, PCT_NAT_PFT, count=(/1,1,15/)))
       call check(nf90_close(ncid))
 
       lflitcn_avg = sum(lflitcn*PCT_NAT_PFT/100.)
@@ -290,7 +290,8 @@ module readMod
       real(r8)                                  :: NPP_NACTIVE  !Mycorrhizal N uptake used C        [gC/m^2/hour] (converted from [gC/m^2/s]) 
       real(r8)                                  :: NPP_NNONMYC  !NONMycorrhizal N uptake used C        [gC/m^2/hour] (converted from [gC/m^2/s]) 
       
-      
+      print*, 'entering read_clm_model_input, time_entry=', time_entry
+      print*, 'CLM_version=', CLM_version
       select case (CLM_version)
       case("old")
         ! C in Coarse Woody Debris
@@ -304,18 +305,18 @@ module readMod
         call check(nf90_get_var(ncid, varid, N_CWD2, start=(/1,1,time_entry/),count=(/1,nlevels,1/)))      
         call check(nf90_inq_varid(ncid, 'CWDN_TO_LITR3N_vr', varid))
         call check(nf90_get_var(ncid, varid, N_CWD3, start=(/1,1,time_entry/),count=(/1,nlevels,1/)))
-
+      
       case("new")
         ! C in Coarse Woody Debris
-        call check(nf90_inq_varid(ncid, 'CWDC_TO_CEL_LITC_vr', varid))
+        call check(nf90_inq_varid(ncid, 'CWD_C_TO_LIT_CEL_C_vr', varid))
         call check(nf90_get_var(ncid, varid, C_CWD2, start=(/1,1,time_entry/),count=(/1,nlevels,1/)))
-        call check(nf90_inq_varid(ncid, 'CWDC_TO_LIG_LITC_vr', varid))
+        call check(nf90_inq_varid(ncid, 'CWD_C_TO_LIT_LIG_C_vr', varid))
         call check(nf90_get_var(ncid, varid, C_CWD3, start=(/1,1,time_entry/),count=(/1,nlevels,1/)))
             
         ! N in Coarse Woody Debris
-        call check(nf90_inq_varid(ncid, 'CWDN_TO_CEL_LITN_vr', varid))
+        call check(nf90_inq_varid(ncid, 'CWD_N_TO_LIT_CEL_N_vr', varid))
         call check(nf90_get_var(ncid, varid, N_CWD2, start=(/1,1,time_entry/),count=(/1,nlevels,1/)))      
-        call check(nf90_inq_varid(ncid, 'CWDN_TO_LIG_LITN_vr', varid))
+        call check(nf90_inq_varid(ncid, 'CWD_N_TO_LIT_LIG_N_vr', varid))
         call check(nf90_get_var(ncid, varid, N_CWD3, start=(/1,1,time_entry/),count=(/1,nlevels,1/)))       
       end select
 
@@ -324,10 +325,11 @@ module readMod
       N_CWD=(N_CWD2+N_CWD3)*sec_pr_hr !gN/(m3 s) to gN/(m3 h)
       
       !C and N litter from leafs and fine roots:
+      print*, 'reading LEAFN_TO_LITTER'
       call check(nf90_inq_varid(ncid, 'LEAFN_TO_LITTER', varid))
       call check(nf90_get_var(ncid, varid, LEAFN_TO_LITTER,start=(/1, time_entry/)))
       LEAFN_TO_LITTER = LEAFN_TO_LITTER*sec_pr_hr  ![gC/m^2/h]
-      
+      print*, 'reading FROOTN_TO_LITTER'
       call check(nf90_inq_varid(ncid, 'FROOTN_TO_LITTER', varid))
       call check(nf90_get_var(ncid, varid, FROOTN_TO_LITTER,start=(/1, time_entry/)))
       FROOTN_TO_LITTER = FROOTN_TO_LITTER*sec_pr_hr  ![gC/m^2/h]    

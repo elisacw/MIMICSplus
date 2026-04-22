@@ -335,17 +335,17 @@ contains
 
       allocate(ndep_prof(nlevels),leaf_prof(nlevels),froot_prof(nlevels), norm_froot_prof(nlevels), croot_prof(nlevels),stem_prof(nlevels))
 
-      call read_WATSAT_and_profiles(adjustr(clm_input_path)//'all.'//"1901.nc",WATSAT,ndep_prof,froot_prof,leaf_prof) !NOTE: This subroutine needs to read a file that contains WATSAT etc. 
+      call read_WATSAT_and_profiles(trim(clm_input_path)//"1901.nc",WATSAT,ndep_prof,froot_prof,leaf_prof) !NOTE: This subroutine needs to read a file that contains WATSAT etc. 
 
-      call read_mort_profiles(adjustr(clm_mortality_path)//"1901.nc",croot_prof,stem_prof)
+      call read_mort_profiles(trim(clm_input_path)//"1901.nc", croot_prof, stem_prof)
 
  
       !read data from CLM file
       if ( start_year == 1850 ) then
         Spinup_run = .True.
         spinup_counter =1
-        call check(nf90_open(trim(adjustr(clm_input_path)//'for_spinup.1850-1869.nc'), nf90_nowrite, spinupncid))  
-        call check(nf90_open(trim(adjustr(clm_mortality_path)//'for_spinup.1850-1869.nc'),nf90_nowrite,mort_spinupncid))
+        call check(nf90_open(trim(clm_input_path)//'for_spinup.1850-1869.nc', nf90_nowrite, spinupncid))
+        call check(nf90_open(trim(clm_mortality_path)//'for_spinup.1850-1869.nc', nf90_nowrite, mort_spinupncid))
         call read_time(spinupncid,input_steps) !Check if inputdata is daily or monthly ("steps" is output)         
         call read_clm_model_input(spinupncid,spinup_counter,CLM_version, &
         N_leaf_litter,N_root_litter,C_MYCinput,N_DEPinput, &
@@ -354,8 +354,8 @@ contains
         call read_clm_mortality(mort_spinupncid,spinup_counter,froot_prof,croot_prof,leaf_prof,stem_prof,met_mortC,met_mortN,split_mortC,split_mortN)     
       else
         Spinup_run = .False. 
-        call check(nf90_open(trim(adjustr(clm_input_path)//'all.'//year_char//'.nc'), nf90_nowrite, ncid)) 
-        call check(nf90_open(trim(adjustr(clm_mortality_path)//year_char//'.nc'),nf90_nowrite,mort_ncid))
+        call check(nf90_open(trim(clm_input_path)//year_char//'.nc', nf90_nowrite, ncid))
+        call check(nf90_open(trim(clm_mortality_path)//year_char//'.nc', nf90_nowrite, mort_ncid))
         call read_time(ncid,input_steps) !Check if inputdata is daily or monthly ("steps" is output) 
         call read_clm_model_input(ncid,1, CLM_version,&
         N_leaf_litter,N_root_litter,C_MYCinput,N_DEPinput, &
@@ -369,7 +369,7 @@ contains
       call moisture_func(SOILLIQ,WATSAT,SOILICE,r_moist)                   
 
       call read_clay(adjustr(clm_surf_path),fCLAY)
-      call calc_PFT(adjustr(clm_input_path)//'all.'//"1901.nc",lflitcn_avg)
+      call calc_PFT(trim(clm_surf_path),lflitcn_avg)
       
       if ( .not. use_ROI ) then !use static PFT determined fractionation between EcM and AM C input
         call read_PFTs(adjustr(clm_surf_path),PFT_distribution)
@@ -747,8 +747,10 @@ contains
 
           if ( .not. Spinup_run ) then                              
             call check(nf90_close(ncid)) !Close netcdf file containing values for the past year
-            call check(nf90_open(trim(adjustr(clm_input_path)//'all.'//year_char//'.nc'), nf90_nowrite, ncid)) !open netcdf containing values for the next year
-            call read_time(ncid,input_steps)     
+            call check(nf90_open(trim(clm_input_path)//year_char//'.nc', nf90_nowrite, ncid)) !open netcdf containing values for the next year
+            print*, 'reading time'
+            call read_time(spinupncid, input_steps)
+            print*, 'input_steps=', input_steps     
           end if           
           sum_consN =0
           sum_consC =0
